@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGetProfilesQuery } from "./api/api";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -9,16 +9,24 @@ import {
 } from "./redux/state/profileSlice";
 
 function Profile() {
-  const { data, error, isLoading } = useGetProfilesQuery();
+  const [page, setPage] = useState(1); // Track current page
+  const { data, error, isLoading } = useGetProfilesQuery(); // Fetch all profiles
   const dispatch = useDispatch();
   const navigate = useNavigate();
+
+  const itemsPerPage = 10;
+
   if (isLoading) {
     return <p>Loading...</p>;
   }
 
   if (error) {
-    return <p>Error fetching hotels</p>;
+    return <p>Error fetching profiles</p>;
   }
+
+  // Calculate start and end index for current page
+  const startIndex = (page - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
 
   const handleChange = (x) => {
     try {
@@ -32,11 +40,21 @@ function Profile() {
     }
   };
 
+  const handleNextPage = () => {
+    setPage(page + 1); // Increment page number
+  };
+
+  const handlePrevPage = () => {
+    if (page > 1) {
+      setPage(page - 1); // Decrement page number, ensure it doesn't go below 1
+    }
+  };
+
   return (
     <>
       <div>
         {data &&
-          data.map((x) => {
+          data.slice(startIndex, endIndex).map((x) => {
             return (
               <div key={x._id}>
                 <div onClick={() => handleChange(x)}>
@@ -48,6 +66,12 @@ function Profile() {
               </div>
             );
           })}
+      </div>
+      <div>
+        <button onClick={handlePrevPage} disabled={page === 1}>
+          Previous Page
+        </button>
+        <button onClick={handleNextPage}>Next Page</button>
       </div>
     </>
   );
