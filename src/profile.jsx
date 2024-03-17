@@ -10,6 +10,7 @@ import {
 
 function Profile() {
   const [page, setPage] = useState(1); // Track current page
+  const [searchQuery, setSearchQuery] = useState(""); // Track search query
   const { data, error, isLoading } = useGetProfilesQuery(); // Fetch all profiles
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -50,22 +51,38 @@ function Profile() {
     }
   };
 
+  const handleSearch = (event) => {
+    setSearchQuery(event.target.value); // Update search query state
+    setPage(1); // Reset page number when searching
+  };
+
+  const filteredData = data.filter((x) =>
+    x.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
       <div>
-        {data &&
-          data.slice(startIndex, endIndex).map((x) => {
-            return (
-              <div key={x._id}>
-                <div onClick={() => handleChange(x)}>
-                  <img src={x.url} alt={x.name} height={90} width={90} />
-                </div>
-
-                <div>Title: {x.title}</div>
-                <div>Thumbnail: {x.thumbnailUrl}</div>
+        <input
+          type="text"
+          placeholder="Search by title..."
+          value={searchQuery}
+          onChange={handleSearch}
+        />
+      </div>
+      <div>
+        {filteredData.slice(startIndex, endIndex).map((x) => {
+          return (
+            <div key={x._id}>
+              <div onClick={() => handleChange(x)}>
+                <img src={x.url} alt={x.name} height={90} width={90} />
               </div>
-            );
-          })}
+
+              <div>Title: {x.title}</div>
+              <div>Thumbnail: {x.thumbnailUrl}</div>
+            </div>
+          );
+        })}
       </div>
       <div>
         <button onClick={handlePrevPage} disabled={page === 1}>
